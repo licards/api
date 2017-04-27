@@ -2,18 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Transformers\DeckTransformer;
+use App\Models\Deck;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\JWTAuth;
 
 class DeckController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
+     * @param JWTAuth $jwtAuth
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(JWTAuth $jwtAuth)
     {
-        //
+        $user = $jwtAuth->parseToken()->authenticate();
+        $decks = $user->decks()
+            ->with('cards.fields', 'fields')
+            ->paginate();
+
+        return $this->response->paginator($decks, new DeckTransformer());
     }
 
     /**
@@ -40,12 +49,23 @@ class DeckController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
+     * @param JWTAuth $jwtAuth
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id, JWTAuth $jwtAuth)
     {
-        //
+        $deck = Deck::find($id);
+
+        if(!$deck->is_public) {
+            $user = $jwtAuth->parseToken()->authenticate();
+
+            if($deck->owner->id !== $user->id) {
+                abort(403);
+            }
+        }
+
+        return $this->item($deck, new DeckTransformer);
     }
 
     /**
