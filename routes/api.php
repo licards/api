@@ -1,18 +1,21 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DeckController;
+use Dingo\Api\Routing\Router;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+$api = app(Router::class);
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+$api->version('v1', function(Router $api) {
+    $api->group(['prefix' => 'auth'], function(Router $api) {
+        $api->post('login', "\\App\\Http\\Controllers\\AuthController@login");
+        $api->post('register', "\\App\\Http\\Controllers\\AuthController@register");
+        $api->post('refresh', ['middleware' => 'jwt.refresh', function() {}]);
+    });
+
+    $api->group(['middleware' => 'api.auth'], function(Router $api) {
+        $api->resource('categories', CategoryController::class);
+        $api->resource('decks', DeckController::class);
+    });
+
 });
