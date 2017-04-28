@@ -47,6 +47,7 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
+//        dd(Category::findOrFail($id)->getDescendants());
         return $this->response->item(Category::findOrFail($id), new CategoryTransformer);
     }
 
