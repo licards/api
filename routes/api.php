@@ -16,7 +16,7 @@ $api->version('v1', function(Router $api) {
     });
 
     $api->group(['middleware' => 'api.auth'], function(Router $api) {
-        $api->resource('categories', CategoryController::class);
-        $api->resource('decks', DeckController::class);
+        $api->resource('categories', CategoryController::class, ['only' => ['index', 'show']]);
+        $api->resource('decks', DeckController::class, ['only' => ['index', 'show']]);
     });
 });
