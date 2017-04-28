@@ -7,7 +7,7 @@ use App\Models\Field;
 use App\Models\Tag;
 use Illuminate\Database\Seeder;
 
-class DecksSeeder extends Seeder
+class CardsSeeder extends Seeder
 {
     const TOTAL_TAGS = 20;
     const TOTAL_DECKS = 1;
@@ -71,13 +71,12 @@ class DecksSeeder extends Seeder
                 }
 
                 for($i = 0; $i < self::CATEGORIES_PER_DECK; $i++) {
-                    $category = $leafCategories->get($categoriesIndex);
+                    $leafCategory = $leafCategories->get($categoriesIndex);
 
-                    // propagate from leaf to root
-                    do {
-                        $deck->categories()->attach($category->id);
+                    foreach($leafCategory->getAncestorsAndSelf() as $category) {
+                        $deck->categories()->syncWithoutDetaching([$category->id]);
                         $categoriesIndex = ($categoriesIndex + 1) % $leafCategories->count();
-                    } while($category = $category->parent()->get()->first());
+                    }
                 }
 
                 $fields = factory(Field::class, self::FIELDS_PER_DECK)->create(['deck_id' => $deck->id]);

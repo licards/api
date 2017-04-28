@@ -21,8 +21,7 @@ class CreateCardsLogic extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onDelete('cascade')->onUpdate('cascade');
         });
 
         Schema::create('fields', function(Blueprint $table) {
@@ -33,8 +32,7 @@ class CreateCardsLogic extends Migration
             $table->timestamps();
 
             $table->foreign('deck_id')->references('id')->on('decks')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onDelete('cascade')->onUpdate('cascade');
         });
 
         Schema::create('cards', function(Blueprint $table) {
@@ -43,23 +41,7 @@ class CreateCardsLogic extends Migration
             $table->timestamps();
 
             $table->foreign('deck_id')->references('id')->on('decks')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-        });
-
-        Schema::create('card_field', function(Blueprint $table) {
-            $table->increments('id');
-            $table->integer('card_id')->unsigned();
-            $table->integer('field_id')->unsigned();
-            $table->text('value');
-
-            $table->foreign('card_id')->references('id')->on('cards')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
-            $table->foreign('field_id')->references('id')->on('fields')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onDelete('cascade')->onUpdate('cascade');
         });
 
         Schema::create('tags', function(Blueprint $table) {
@@ -68,32 +50,41 @@ class CreateCardsLogic extends Migration
             $table->timestamps();
         });
 
+        Schema::create('card_field', function(Blueprint $table) {
+            $table->integer('card_id')->unsigned();
+            $table->integer('field_id')->unsigned();
+            $table->text('value');
+
+            $table->foreign('card_id')->references('id')->on('cards')
+                ->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('field_id')->references('id')->on('fields')
+                ->onDelete('cascade')->onUpdate('cascade');
+
+            $table->primary(['card_id', 'field_id']);
+        });
+
         Schema::create('deck_tag', function(Blueprint $table) {
-            $table->increments('id');
             $table->integer('deck_id')->unsigned();
             $table->integer('tag_id')->unsigned();
 
             $table->foreign('deck_id')->references('id')->on('decks')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
+                ->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('tag_id')->references('id')->on('tags')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onDelete('cascade')->onUpdate('cascade');
+
+            $table->primary(['deck_id', 'tag_id']);
         });
 
         Schema::create('category_deck', function(Blueprint $table) {
-            $table->increments('id');
             $table->integer('category_id')->unsigned();
             $table->integer('deck_id')->unsigned();
 
             $table->foreign('category_id')->references('id')->on('categories')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-
+                ->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('deck_id')->references('id')->on('decks')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onDelete('cascade')->onUpdate('cascade');
+
+            $table->primary(['category_id', 'deck_id']);
         });
     }
 
