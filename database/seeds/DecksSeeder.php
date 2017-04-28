@@ -17,6 +17,7 @@ class DecksSeeder extends Seeder
     const CATEGORIES_PER_DECK = 3;
     const FIELDS_PER_DECK = 3;
     const CARDS_PER_DECK = 30;
+    const TOTAL_SUBCATEGORIES_PER_CATEGORY = 3;
 
     protected $faker;
 
@@ -39,7 +40,7 @@ class DecksSeeder extends Seeder
 
     protected function seedTags()
     {
-        return factory(Tag::class, self::TOTAL_TAGS)->create();
+        factory(Tag::class, self::TOTAL_TAGS)->create();
     }
 
     protected function seedCategories()
@@ -49,17 +50,17 @@ class DecksSeeder extends Seeder
         factory(Category::class, self::TOTAL_CATEGORIES)
             ->create(['parent_id' => $rootCategory->id])
             ->each(function(Category $category) {
-                factory(Category::class, 3)->create(['parent_id' => $category->id]);
+                factory(Category::class, self::TOTAL_SUBCATEGORIES_PER_CATEGORY)->create(['parent_id' => $category->id]);
             });
-
-        // get all categories that are leaves
-        return Category::allLeaves()->get();
     }
 
-    protected function seedDecks($tags, $leafCategories)
+    protected function seedDecks()
     {
         $tagIndex = 0;
         $categoriesIndex = 0;
+
+        $leafCategories = Category::allLeaves()->get();
+        $tags = Tag::all();
 
         return factory(Deck::class, self::TOTAL_DECKS)->create()
             ->each(function($deck) use ($tagIndex, $categoriesIndex, $tags, $leafCategories) {
@@ -101,10 +102,9 @@ class DecksSeeder extends Seeder
     {
         $this->truncateTables();
 
-        $tags = $this->seedTags();
-        $leafCategories = $this->seedCategories();
-
-        $this->seedDecks($tags, $leafCategories);
+        $this->seedTags();
+        $this->seedCategories();
+        $this->seedDecks();
 
     }
 }
