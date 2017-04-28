@@ -16,6 +16,11 @@ class Category extends Node {
    */
   protected $table = 'categories';
 
+  public function decks()
+  {
+      return $this->belongsToMany(Deck::class);
+  }
+
   //////////////////////////////////////////////////////////////////////////////
 
   //

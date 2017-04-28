@@ -64,9 +64,32 @@ class CreateCardsLogic extends Migration
 
         Schema::create('tags', function(Blueprint $table) {
             $table->increments('id');
-            $table->integer('deck_id')->unsigned();
             $table->string('name');
             $table->timestamps();
+        });
+
+        Schema::create('deck_tag', function(Blueprint $table) {
+            $table->increments('id');
+            $table->integer('deck_id')->unsigned();
+            $table->integer('tag_id')->unsigned();
+
+            $table->foreign('deck_id')->references('id')->on('decks')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->foreign('tag_id')->references('id')->on('tags')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+        });
+
+        Schema::create('category_deck', function(Blueprint $table) {
+            $table->increments('id');
+            $table->integer('category_id')->unsigned();
+            $table->integer('deck_id')->unsigned();
+
+            $table->foreign('category_id')->references('id')->on('categories')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
 
             $table->foreign('deck_id')->references('id')->on('decks')
                 ->onDelete('cascade')
@@ -81,10 +104,12 @@ class CreateCardsLogic extends Migration
      */
     public function down()
     {
-        Schema::drop('card_field');
-        Schema::drop('tags');
-        Schema::drop('cards');
-        Schema::drop('fields');
-        Schema::drop('decks');
+        Schema::dropIfExists('category_deck');
+        Schema::dropIfExists('deck_tag');
+        Schema::dropIfExists('card_field');
+        Schema::dropIfExists('tags');
+        Schema::dropIfExists('cards');
+        Schema::dropIfExists('fields');
+        Schema::dropIfExists('decks');
     }
 }

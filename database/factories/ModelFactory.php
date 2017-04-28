@@ -12,7 +12,14 @@
 */
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define(App\Models\User::class, function (Faker\Generator $faker) {
+use App\Models\Card;
+use App\Models\Category;
+use App\Models\Deck;
+use App\Models\Field;
+use App\Models\Tag;
+use App\Models\User;
+
+$factory->define(User::class, function (Faker\Generator $faker) {
     static $password;
 
     return [
@@ -23,25 +30,31 @@ $factory->define(App\Models\User::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(App\Models\Deck::class, function(Faker\Generator $faker) {
+$factory->define(Deck::class, function(Faker\Generator $faker) {
     return [
         'user_id' => 1,
         'name' => $faker->text(20),
     ];
 });
 
-$factory->define(App\Models\Field::class, function(Faker\Generator $faker) {
+$factory->define(Field::class, function(Faker\Generator $faker) {
     return [
         'name' => $faker->text(10),
     ];
 });
 
-$factory->define(App\Models\Tag::class, function(Faker\Generator $faker) {
+$factory->define(Tag::class, function(Faker\Generator $faker) {
     return [
         'name' => $faker->text(10),
     ];
 });
 
-$factory->define(App\Models\Card::class, function(Faker\Generator $faker) {
+$factory->define(Card::class, function(Faker\Generator $faker) {
     return [];
+});
+
+$factory->define(Category::class, function(Faker\Generator $faker) {
+    return [
+        'name' => $faker->text(15),
+    ];
 });

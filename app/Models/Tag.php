@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model
 {
-    public function deck() {
-        return $this->belongsTo(Deck::class);
+    public function decks() {
+        return $this->belongsToMany(Deck::class);
     }
 }

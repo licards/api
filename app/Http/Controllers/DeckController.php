@@ -55,7 +55,7 @@ class DeckController extends Controller
      */
     public function show($id, JWTAuth $jwtAuth)
     {
-        $deck = Deck::find($id);
+        $deck = Deck::findOrFail($id);
 
         if(!$deck->is_public) {
             $user = $jwtAuth->parseToken()->authenticate();
