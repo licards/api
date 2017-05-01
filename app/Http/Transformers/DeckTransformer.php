@@ -13,15 +13,18 @@ class DeckTransformer extends TransformerAbstract
         'tags',
     ];
 
-    protected function includeCards(Deck $deck) {
+    protected function includeCards(Deck $deck)
+    {
         return $this->collection($deck->cards, new CardTransformer);
     }
 
-    protected function includeFields(Deck $deck) {
+    protected function includeFields(Deck $deck)
+    {
         return $this->collection($deck->fields, new FieldTransformer);
     }
 
-    protected function includeTags(Deck $deck) {
+    protected function includeTags(Deck $deck)
+    {
         return $this->collection($deck->tags, new TagTransformer);
     }
 

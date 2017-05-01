@@ -16,6 +16,7 @@ use App\Models\Card;
 use App\Models\Category;
 use App\Models\Deck;
 use App\Models\Field;
+use App\Models\Group;
 use App\Models\Tag;
 use App\Models\User;
 
@@ -32,7 +33,6 @@ $factory->define(User::class, function (Faker\Generator $faker) {
 
 $factory->define(Deck::class, function(Faker\Generator $faker) {
     return [
-        'user_id' => 1,
         'name' => $faker->text(20),
     ];
 });
@@ -54,6 +54,12 @@ $factory->define(Card::class, function(Faker\Generator $faker) {
 });
 
 $factory->define(Category::class, function(Faker\Generator $faker) {
+    return [
+        'name' => $faker->text(15),
+    ];
+});
+
+$factory->define(Group::class, function(Faker\Generator $faker) {
     return [
         'name' => $faker->text(15),
     ];

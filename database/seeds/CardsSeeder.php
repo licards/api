@@ -4,6 +4,7 @@ use App\Models\Card;
 use App\Models\Category;
 use App\Models\Deck;
 use App\Models\Field;
+use App\Models\Group;
 use App\Models\Tag;
 use Illuminate\Database\Seeder;
 
@@ -11,13 +12,14 @@ class CardsSeeder extends Seeder
 {
     const TOTAL_TAGS = 20;
     const TOTAL_DECKS = 1;
-    const TAGS_PER_DECK = 3;
     const TOTAL_CATEGORIES = 10;
+    const TOTAL_GROUPS = 3;
 
+    const TAGS_PER_DECK = 3;
     const CATEGORIES_PER_DECK = 3;
     const FIELDS_PER_DECK = 3;
     const CARDS_PER_DECK = 30;
-    const TOTAL_SUBCATEGORIES_PER_CATEGORY = 3;
+    const SUBCATEGORIES_PER_CATEGORY = 3;
 
     protected $faker;
 
@@ -43,6 +45,11 @@ class CardsSeeder extends Seeder
         factory(Tag::class, self::TOTAL_TAGS)->create();
     }
 
+    protected function seedGroups()
+    {
+        factory(Group::class, self::TOTAL_GROUPS)->create(['user_id' => 1]);
+    }
+
     protected function seedCategories()
     {
         $rootCategory = factory(Category::class)->create();
@@ -50,7 +57,7 @@ class CardsSeeder extends Seeder
         factory(Category::class, self::TOTAL_CATEGORIES)
             ->create(['parent_id' => $rootCategory->id])
             ->each(function(Category $category) {
-                factory(Category::class, self::TOTAL_SUBCATEGORIES_PER_CATEGORY)->create(['parent_id' => $category->id]);
+                factory(Category::class, self::SUBCATEGORIES_PER_CATEGORY)->create(['parent_id' => $category->id]);
             });
     }
 
@@ -58,17 +65,24 @@ class CardsSeeder extends Seeder
     {
         $tagIndex = 0;
         $categoriesIndex = 0;
+        $groupsIndex = 0;
 
         $leafCategories = Category::allLeaves()->get();
         $tags = Tag::all();
+        $groups = Group::all();
 
-        return factory(Deck::class, self::TOTAL_DECKS)->create()
-            ->each(function($deck) use ($tagIndex, $categoriesIndex, $tags, $leafCategories) {
+        return factory(Deck::class, self::TOTAL_DECKS)->create(['user_id' => 1])
+            ->each(function($deck) use ($groupsIndex, $tagIndex, $categoriesIndex, $groups, $tags, $leafCategories) {
 
                 for($i = 0; $i < self::TAGS_PER_DECK; $i++) {
                     $deck->tags()->attach($tags->get($tagIndex)->id);
                     $tagIndex = ($tagIndex + 1) % self::TOTAL_TAGS;
                 }
+
+                $group = $groups->get($groupsIndex);
+                $groupsIndex = ($groupsIndex + 1) % self::TOTAL_GROUPS;
+
+                $deck->group()->associate($group);
 
                 for($i = 0; $i < self::CATEGORIES_PER_DECK; $i++) {
                     $leafCategory = $leafCategories->get($categoriesIndex);
@@ -89,6 +103,8 @@ class CardsSeeder extends Seeder
                     }
                 }
 
+                $deck->save();
+
             });
     }
 
@@ -103,6 +119,7 @@ class CardsSeeder extends Seeder
 
         $this->seedTags();
         $this->seedCategories();
+        $this->seedGroups();
         $this->seedDecks();
 
     }

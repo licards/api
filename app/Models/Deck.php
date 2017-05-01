@@ -30,4 +30,9 @@ class Deck extends Model
     {
         return $this->belongsToMany(Category::class);
     }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'id', 'group_id');
+    }
 }

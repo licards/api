@@ -16,6 +16,7 @@ class CreateCardsLogic extends Migration
         Schema::create('decks', function(Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
+            $table->integer('group_id')->nullable()->unsigned();
             $table->string('name');
             $table->boolean('is_public')->default(true);
             $table->timestamps();
@@ -48,6 +49,16 @@ class CreateCardsLogic extends Migration
             $table->increments('id');
             $table->string('name');
             $table->timestamps();
+        });
+
+        Schema::create('groups', function(Blueprint $table) {
+            $table->increments('id');
+            $table->integer('user_id')->unsigned();
+            $table->string('name');
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')
+                ->onDelete('cascade')->onUpdate('cascade');
         });
 
         Schema::create('card_field', function(Blueprint $table) {
@@ -102,5 +113,6 @@ class CreateCardsLogic extends Migration
         Schema::dropIfExists('cards');
         Schema::dropIfExists('fields');
         Schema::dropIfExists('decks');
+        Schema::dropIfExists('groups');
     }
 }
