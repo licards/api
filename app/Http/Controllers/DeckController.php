@@ -9,14 +9,17 @@ use Tymon\JWTAuth\JWTAuth;
 
 class DeckController extends Controller
 {
-    public function index(JWTAuth $jwtAuth)
+    public function index(JWTAuth $jwtAuth, Request $request)
     {
+        $page = $request->input('page') ?: 1;
+        $per_page = $request->input('per_page') ?: 25;
+
         $user = $jwtAuth->parseToken()->authenticate();
         $decks = $user->decks()
             ->with('cards.fields', 'fields')
-            ->paginate();
+            ->paginate($per_page, ['*'], 'page', $page);
 
-        return $this->response->paginator($decks, new DeckTransformer());
+        return $this->response->paginator($decks, new DeckTransformer);
     }
 
     public function show($id, JWTAuth $jwtAuth)

@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
 class CardsSeeder extends Seeder
 {
     const TOTAL_TAGS = 20;
-    const TOTAL_DECKS = 1;
+    const TOTAL_DECKS = 10;
     const TOTAL_CATEGORIES = 10;
     const TOTAL_GROUPS = 3;
 
@@ -83,11 +83,16 @@ class CardsSeeder extends Seeder
                 $groupsIndex = ($groupsIndex + 1) % self::TOTAL_GROUPS;
 
                 $deck->group()->associate($group);
+                $deck->save();
 
                 for($i = 0; $i < self::CATEGORIES_PER_DECK; $i++) {
                     $leafCategory = $leafCategories->get($categoriesIndex);
 
                     foreach($leafCategory->getAncestorsAndSelf() as $category) {
+                        if(!$deck->id) {
+                            dd($deck);
+                        }
+
                         $deck->categories()->syncWithoutDetaching([$category->id]);
                         $categoriesIndex = ($categoriesIndex + 1) % $leafCategories->count();
                     }
@@ -102,8 +107,6 @@ class CardsSeeder extends Seeder
                         $card->save();
                     }
                 }
-
-                $deck->save();
 
             });
     }
