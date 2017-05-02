@@ -72,7 +72,7 @@ class CardsSeeder extends Seeder
         $groups = Group::all();
 
         return factory(Deck::class, self::TOTAL_DECKS)->create(['user_id' => 1])
-            ->each(function($deck) use ($groupsIndex, $tagIndex, $categoriesIndex, $groups, $tags, $leafCategories) {
+            ->each(function($deck) use (&$groupsIndex, &$tagIndex, &$categoriesIndex, $groups, $tags, $leafCategories) {
 
                 for($i = 0; $i < self::TAGS_PER_DECK; $i++) {
                     $deck->tags()->attach($tags->get($tagIndex)->id);
@@ -89,10 +89,6 @@ class CardsSeeder extends Seeder
                     $leafCategory = $leafCategories->get($categoriesIndex);
 
                     foreach($leafCategory->getAncestorsAndSelf() as $category) {
-                        if(!$deck->id) {
-                            dd($deck);
-                        }
-
                         $deck->categories()->syncWithoutDetaching([$category->id]);
                         $categoriesIndex = ($categoriesIndex + 1) % $leafCategories->count();
                     }
