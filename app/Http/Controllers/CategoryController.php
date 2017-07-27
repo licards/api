@@ -15,7 +15,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return $this->response->collection(Category::all(), new CategoryTransformer());
+        // we assume that the first category is the root category
+        return $this->response->item(Category::first(), new CategoryTransformer());
     }
 
     /**
