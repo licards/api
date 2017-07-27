@@ -33,11 +33,9 @@ class DeckController extends Controller
             'name' => 'required',
         ]);
 
-        \Auth::user()->decks()->create([
-            'name' => $request->get('name'),
-        ]);
+        $deck = \Auth::user()->decks()->create(['name' => $request->get('name')]);
 
-        return $this->response->created();
+        return $this->response->item($deck, new DeckTransformer());
     }
 
     /**

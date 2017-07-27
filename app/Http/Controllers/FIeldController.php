@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Transformers\FieldTransformer;
 use App\Models\Field;
 use Illuminate\Http\Request;
 use App\Models\Deck;
@@ -32,11 +33,9 @@ class FieldController extends Controller
         ]);
 
         $deck = Deck::findOrFail($request->get('deck_id'));
-        $deck->fields()->create([
-            'name' => $request->get('name'),
-        ]);
+        $field = $deck->fields()->create(['name' => $request->get('name')]);
 
-        return $this->response->created();
+        return $this->response->item($field, new FieldTransformer());
     }
 
     /**

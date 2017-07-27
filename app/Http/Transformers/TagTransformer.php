@@ -9,10 +9,6 @@ class TagTransformer extends TransformerAbstract
 {
     public function transform(Tag $tag)
     {
-        return [
-            'id' => $tag->id,
-            'deck_id' => $tag->deck_id,
-            'name' => $tag->name,
-        ];
+        return $tag->toArray();
     }
 }

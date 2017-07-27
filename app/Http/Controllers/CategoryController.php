@@ -32,9 +32,9 @@ class CategoryController extends Controller
             'parent_id' => 'required',
         ]);
 
-        Category::findOrFail($request->get('parent_id'))->children()->create(['name' => $request->get('name')]);
+        $category = Category::findOrFail($request->get('parent_id'))->children()->create(['name' => $request->get('name')]);
 
-        return $this->response->created();
+        return $this->response->item($category, new CategoryTransformer());
     }
 
     /**
@@ -74,6 +74,11 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
+        if ($id == 1) {
+            // can't delete the root category
+            abort(401);
+        }
+
         Category::findOrFail($id)->delete();
 
         return $this->response->noContent();
