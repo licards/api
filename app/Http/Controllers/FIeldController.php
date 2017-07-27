@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Transformers\DeckTransformer;
+use App\Models\Field;
 use Illuminate\Http\Request;
 use App\Models\Deck;
 
-class DeckController extends Controller
+class FieldController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,10 +15,7 @@ class DeckController extends Controller
      */
     public function index()
     {
-        $user = \Auth::user();
-        $decks = Deck::where(['user_id' => $user->id])->paginate();
-
-        return $this->response->paginator($decks, new DeckTransformer());
+        //
     }
 
     /**
@@ -30,10 +27,12 @@ class DeckController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
+            'deck_id' => 'required',
             'name' => 'required',
         ]);
 
-        \Auth::user()->decks()->create([
+        $deck = Deck::findOrFail($request->get('deck_id'));
+        $deck->fields()->create([
             'name' => $request->get('name'),
         ]);
 
@@ -48,18 +47,7 @@ class DeckController extends Controller
      */
     public function show($id)
     {
-        $user = \Auth::user();
-        $deck = Deck::find($id);
-
-        if (!$deck) {
-            abort(404);
-        }
-
-        if ($deck->user_id !== $user->id) {
-            abort(403);
-        }
-
-        return $this->response->item($deck, new DeckTransformer);
+        //
     }
 
     /**
@@ -82,7 +70,7 @@ class DeckController extends Controller
      */
     public function destroy($id)
     {
-        Deck::findOrFail($id)->delete();
+        Field::findOrFail($id)->delete();
 
         return $this->response->noContent();
     }

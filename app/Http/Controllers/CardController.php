@@ -2,25 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Transformers\DeckTransformer;
+use App\Http\Transformers\CardTransformer;
+use App\Models\Card;
 use Illuminate\Http\Request;
 use App\Models\Deck;
 
-class DeckController extends Controller
+class CardController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $user = \Auth::user();
-        $decks = Deck::where(['user_id' => $user->id])->paginate();
-
-        return $this->response->paginator($decks, new DeckTransformer());
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -30,12 +18,18 @@ class DeckController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
+            'deck_id' => 'required',
         ]);
 
-        \Auth::user()->decks()->create([
-            'name' => $request->get('name'),
-        ]);
+        // create the card
+        $deck = Deck::findOrFail($request->get('deck_id'));
+        $card = $deck->cards()->create([]);
+
+        // fill the fields values
+        $fields = $request->get('fields') ?? [];
+        foreach ($fields as $id => $value) {
+            $card->fields()->attach($id, ['value' => $value]);
+        }
 
         return $this->response->created();
     }
@@ -48,18 +42,19 @@ class DeckController extends Controller
      */
     public function show($id)
     {
-        $user = \Auth::user();
-        $deck = Deck::find($id);
+        $card = Card::find($id);
 
-        if (!$deck) {
+        if (!$card) {
             abort(404);
         }
 
-        if ($deck->user_id !== $user->id) {
+        $user = \Auth::user();
+
+        if ($card->deck->user_id !== $user->id) {
             abort(403);
         }
 
-        return $this->response->item($deck, new DeckTransformer);
+        return $this->response->item($card, new CardTransformer());
     }
 
     /**
@@ -71,7 +66,15 @@ class DeckController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $card = Card::findOrFail($id);
+
+        // fill the fields values
+        $fields = $request->get('fields');
+        foreach ($fields as $id => $value) {
+            $card->fields()->attach($id, ['value' => $value]);
+        }
+
+        return $this->response->item($card, new CardTransformer());
     }
 
     /**
@@ -82,7 +85,7 @@ class DeckController extends Controller
      */
     public function destroy($id)
     {
-        Deck::findOrFail($id)->delete();
+        Card::findOrFail($id)->delete();
 
         return $this->response->noContent();
     }
