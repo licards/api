@@ -4,6 +4,7 @@ use App\Http\Controllers\CardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DeckController;
 use App\Http\Controllers\FieldController;
+use App\Http\Controllers\TagController;
 use Dingo\Api\Routing\Router;
 
 $api = app(Router::class);
@@ -28,6 +29,9 @@ $api->version('v1', function(Router $api) {
 
         // cards
         $api->resource('cards', CardController::class);
+
+        // tags
+        $api->resource('tags', TagController::class);
     });
 
 });

@@ -69,7 +69,20 @@ class DeckController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $deck = Deck::find($id);
+
+        if (!$deck) {
+            abort(404);
+        }
+
+        if ($deck->user_id !== \Auth::user()->id) {
+            abort(403);
+        }
+
+        // update default properties
+        $deck->update($request->intersect(['name']));
+
+        return $this->response->item($deck, new DeckTransformer());
     }
 
     /**

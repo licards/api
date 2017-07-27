@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model
 {
+    protected $fillable = [
+        'name',
+    ];
+
     public function decks()
     {
         return $this->belongsToMany(Deck::class);

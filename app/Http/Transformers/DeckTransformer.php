@@ -2,12 +2,22 @@
 
 namespace App\Http\Transformers;
 
+use App\Models\Deck;
 use League\Fractal\TransformerAbstract;
 
 class DeckTransformer extends TransformerAbstract
 {
-    public function transform($resource)
+    protected $availableIncludes = [
+        'categories',
+    ];
+
+    public function transform(Deck $deck)
     {
-        return $resource->toArray();
+        return $deck->toArray();
+    }
+
+    public function includeCategories(Deck $deck)
+    {
+        return $this->collection($deck->categories, new CategoryTransformer());
     }
 }

@@ -31,7 +31,7 @@ class CardController extends Controller
             $card->fields()->attach($id, ['value' => $value]);
         }
 
-        return $this->response->item($card, new CardController());
+        return $this->response->item($card, new CardTransformer());
     }
 
     /**
