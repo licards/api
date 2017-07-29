@@ -9,6 +9,6 @@ class FieldTransformer extends TransformerAbstract
 {
     public function transform(Field $field)
     {
-        return $field;
+        return $field->toArray();
     }
 }

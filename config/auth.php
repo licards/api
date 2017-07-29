@@ -2,6 +2,9 @@
 
 return [
 
+    // duplicate model for zizaco
+    'model' => 'App\Models\User',
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -67,7 +70,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => 'App\Models\User',
         ],
 
         // 'users' => [

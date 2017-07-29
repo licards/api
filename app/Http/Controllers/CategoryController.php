@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\CategoryTransformer;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Models\Category;
 
@@ -27,6 +28,12 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::CREATE_CATEGORIES)) {
+            abort(403);
+        }
+
         $this->validate($request, [
             'name' => 'required',
             'parent_id' => 'required',
@@ -45,6 +52,12 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::READ_CATEGORIES)) {
+            abort(403);
+        }
+
         $category = Category::find($id);
 
         if (!$category) {
@@ -63,7 +76,23 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $category = Category::find($id);
+
+        if (!$category) {
+            abort(404);
+        }
+
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::UPDATE_CATEGORIES)) {
+            abort(403);
+        }
+
+        // update properties
+        $properties = array_intersect_key($request->all(), array_flip(['name']));
+        $category->update($properties);
+
+        return $this->response->item($category, new CategoryTransformer());
     }
 
     /**
@@ -74,12 +103,26 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        if ($id == 1) {
+        $category = Category::find($id);
+
+        if (!$category) {
+            abort(404);
+        }
+
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::DELETE_CATEGORIES)) {
+            abort(403);
+        }
+
+        $rootCategory = Category::where(['parent_id' => null])->first();
+
+        if (!$rootCategory || $id == $rootCategory->id) {
             // can't delete the root category
             abort(401);
         }
 
-        Category::findOrFail($id)->delete();
+        $category->delete();
 
         return $this->response->noContent();
     }

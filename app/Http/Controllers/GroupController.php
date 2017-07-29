@@ -2,14 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Transformers\FieldTransformer;
-use App\Models\Field;
+use App\Http\Transformers\GroupTransformer;
+use App\Models\Group;
 use App\Models\Permission;
 use Illuminate\Http\Request;
-use App\Models\Deck;
 
-class FieldController extends Controller
+class GroupController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $user = \Auth::user();
+        $groups = Group::where(['user_id' => $user->id])->get();
+
+        return $this->response->collection($groups, new GroupTransformer());
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -20,19 +32,18 @@ class FieldController extends Controller
     {
         $user = \Auth::user();
 
-        if (!$user->ability('admin', Permission::CREATE_FIELDS)) {
+        if (!$user->ability('admin', Permission::CREATE_GROUPS)) {
             abort(403);
         }
 
         $this->validate($request, [
-            'deck_id' => 'required',
             'name' => 'required',
         ]);
 
-        $deck = Deck::findOrFail($request->get('deck_id'));
-        $field = $deck->fields()->create(['name' => $request->get('name')]);
+        // create the card
+        $group = $user->groups()->create(['name' => $request->get('name')]);
 
-        return $this->response->item($field, new FieldTransformer());
+        return $this->response->item($group, new GroupTransformer());
     }
 
     /**
@@ -44,23 +55,23 @@ class FieldController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $field = Field::find($id);
-
-        if (!$field) {
-            abort(404);
-        }
-
         $user = \Auth::user();
 
-        if (!$user->ability('admin', Permission::UPDATE_FIELDS) && $field->deck->user->id != $user->id) {
+        if (!$user->ability('admin', Permission::UPDATE_GROUPS)) {
             abort(403);
+        }
+
+        $group = Group::find($id);
+
+        if (!$group) {
+            abort(404);
         }
 
         // update properties
         $properties = array_intersect_key($request->all(), array_flip(['name']));
-        $field->update($properties);
+        $group->update($properties);
 
-        return $this->response->item($field, new FieldTransformer());
+        return $this->response->item($group, new GroupTransformer());
     }
 
     /**
@@ -71,19 +82,19 @@ class FieldController extends Controller
      */
     public function destroy($id)
     {
-        $field = Field::find($id);
+        $group = Group::find($id);
 
-        if (!$field) {
+        if (!$group) {
             abort(404);
         }
 
         $user = \Auth::user();
 
-        if (!$user->ability('admin', Permission::DELETE_FIELDS) && $field->deck->user->id != $user->id) {
+        if (!$user->ability('admin', Permission::DELETE_GROUPS) && $group->user->id != $user->id) {
             abort(403);
         }
 
-        $field->delete();
+        $group->delete();
 
         return $this->response->noContent();
     }

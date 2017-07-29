@@ -182,6 +182,7 @@ return [
         Barryvdh\Cors\ServiceProvider::class,
         Baum\Providers\BaumServiceProvider::class,
         Zizaco\Entrust\EntrustServiceProvider::class,
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
 
     ],
 

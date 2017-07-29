@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Transformers\CardTransformer;
 use App\Models\Card;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Models\Deck;
 
@@ -17,12 +18,23 @@ class CardController extends Controller
      */
     public function store(Request $request)
     {
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::CREATE_CARDS)) {
+            abort(403);
+        }
+
         $this->validate($request, [
             'deck_id' => 'required',
         ]);
 
         // create the card
-        $deck = Deck::findOrFail($request->get('deck_id'));
+        $deck = Deck::find($request->get('deck_id'));
+
+        if (!$deck) {
+            abort(401);
+        }
+
         $card = $deck->cards()->create([]);
 
         // fill the fields values
@@ -50,7 +62,7 @@ class CardController extends Controller
 
         $user = \Auth::user();
 
-        if ($card->deck->user_id !== $user->id) {
+        if ($user->ability('admin', Permission::READ_CARDS) && $card->deck->user->id !== $user->id) {
             abort(403);
         }
 
@@ -66,7 +78,17 @@ class CardController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $card = Card::findOrFail($id);
+        $card = Card::find($id);
+
+        if (!$card) {
+            abort(404);
+        }
+
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::UPDATE_CARDS) && $card->deck->user->id != $user->id) {
+            abort(403);
+        }
 
         // fill the fields values
         $fields = $request->get('fields');
@@ -85,7 +107,19 @@ class CardController extends Controller
      */
     public function destroy($id)
     {
-        Card::findOrFail($id)->delete();
+        $card = Card::find($id);
+
+        if (!$card) {
+            abort(404);
+        }
+
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::DELETE_CARDS) && $card->deck->user->id != $user->id) {
+            abort(403);
+        }
+
+        $card->delete();
 
         return $this->response->noContent();
     }

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\DeckTransformer;
+use App\Models\Group;
+use App\Models\Permission;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use App\Models\Deck;
 
@@ -16,7 +19,7 @@ class DeckController extends Controller
     public function index()
     {
         $user = \Auth::user();
-        $decks = Deck::where(['user_id' => $user->id])->paginate();
+        $decks = $user->decks()->paginate();
 
         return $this->response->paginator($decks, new DeckTransformer());
     }
@@ -29,11 +32,29 @@ class DeckController extends Controller
      */
     public function store(Request $request)
     {
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::CREATE_DECKS)) {
+            abort(403);
+        }
+
         $this->validate($request, [
             'name' => 'required',
+            'public' => 'boolean',
         ]);
 
-        $deck = \Auth::user()->decks()->create(['name' => $request->get('name')]);
+        $deck = $user->decks()->create([
+            'name' => $request->get('name'),
+            'public' => $request->get('public') ?? true,
+        ]);
+
+        // create fields
+        if ($request->has('fields')) {
+            $fields = $request->get('fields');
+            foreach ($fields as $field) {
+                $deck->fields()->create(['name' => $field]);
+            }
+        }
 
         return $this->response->item($deck, new DeckTransformer());
     }
@@ -46,14 +67,15 @@ class DeckController extends Controller
      */
     public function show($id)
     {
-        $user = \Auth::user();
         $deck = Deck::find($id);
 
         if (!$deck) {
             abort(404);
         }
 
-        if ($deck->user_id !== $user->id) {
+        $user = \Auth::user();
+
+        if ($user->ability('admin', Permission::READ_DECKS) && $deck->user->id != $user->id) {
             abort(403);
         }
 
@@ -63,7 +85,7 @@ class DeckController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  \illuminate\Http\Request $request
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
@@ -75,12 +97,32 @@ class DeckController extends Controller
             abort(404);
         }
 
-        if ($deck->user_id !== \Auth::user()->id) {
+        $user = \Auth::user();
+
+        if ($user->ability('admin', Permission::UPDATE_DECKS) && $deck->user->id != $user->id) {
             abort(403);
         }
 
-        // update default properties
-        $deck->update($request->intersect(['name']));
+        // update properties
+        $properties = array_intersect_key($request->all(), array_flip(['name', 'public']));
+        $deck->update($properties);
+
+        // update tags
+        if ($request->has('tags')) {
+            $tags = $request->get('tags');
+            foreach ($tags as $tag) {
+                $tag = Tag::firstOrCreate(['name' => $tag]);
+                $deck->tags()->attach($tag);
+            }
+        }
+
+        // update groups
+        if ($request->has('groups')) {
+            $groups = $request->get('groups');
+            foreach ($groups as $group) {
+                $deck->groups()->attach(Group::find($group));
+            }
+        }
 
         return $this->response->item($deck, new DeckTransformer());
     }
@@ -93,7 +135,19 @@ class DeckController extends Controller
      */
     public function destroy($id)
     {
-        Deck::findOrFail($id)->delete();
+        $deck = Deck::find($id);
+
+        if (!$deck) {
+            abort(404);
+        }
+
+        $user = \Auth::user();
+
+        if (!$user->ability('admin', Permission::DELETE_DECKS) && $deck->user->id != $user->id) {
+            abort(403);
+        }
+
+        $deck->delete();
 
         return $this->response->noContent();
     }

@@ -4,6 +4,8 @@ use App\Http\Controllers\CardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DeckController;
 use App\Http\Controllers\FieldController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\StubController;
 use App\Http\Controllers\TagController;
 use Dingo\Api\Routing\Router;
 
@@ -32,6 +34,12 @@ $api->version('v1', function(Router $api) {
 
         // tags
         $api->resource('tags', TagController::class);
+
+        // stubs
+        $api->resource('stubs', StubController::class);
+
+        // groups
+        $api->resource('groups', GroupController::class);
     });
 
 });
